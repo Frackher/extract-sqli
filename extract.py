@@ -162,7 +162,7 @@ myFile = input('Path of DB file? ')
 mySQL = input('Specific SQL Request (if not just <enter>)? ')
 
 if (os.path.isfile(myFile)):
-    print("Connecting DB..."+mySQL)
+    print("Connecting DB...")
     #Start, connect to local DB
     try:
         connection = sqlite3.connect(myFile)

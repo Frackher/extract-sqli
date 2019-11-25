@@ -1,6 +1,6 @@
 # extract-sqli
 
-> For forensics purposes, allow you to extract infos and present them, stored in SQLite DataBases
+> For forensics and reports purposes, allow you to extract infos and present them, stored in SQLite DataBases
 
 **👨‍🔬 Inspired by:** 
 

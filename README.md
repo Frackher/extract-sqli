@@ -21,4 +21,4 @@
 🚀 Future Update:
 -
  - Allowing specific request by prompting it ✅ [25/11/2019]
- _ Refactoring html templating
+ - Refactoring html templating

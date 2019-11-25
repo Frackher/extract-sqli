@@ -71,9 +71,45 @@ def showTable(aList):
         
     return html
 
+#Return All Data due to a Specific Request
+def showSResults(cursor, sqlRequest):
+    html = '<h2 class="display-4">Request: <small class="text-muted">'+sqlRequest+'</small></h2><br/>'
+        
+    #Show Structure
+    html += '''
+    <div class="table-responsive">
+    <table class="table table-striped table-bordered table-hover">
+        <thead class="thead-dark">
+            <tr>
+    '''
+    names = list(map(lambda x: x[0], cursor.description))
+    for col in names:
+        html += '<td>'+col[1]+'</td>' 
+    html += '''
+            </tr>
+        </thead>
+        <tbody>
+    '''
+
+    #Show Data
+    data = cursor.fetchall()
+    for row in data:
+        html += '<tr>'
+        for val in row:
+            html += '<td>'+checkType(val)+'</td>'
+        html += '</tr>'
+    html += '''
+        </tbody>
+    </table>
+    </div>
+    <br/><br/>
+    '''
+    
+    return html
+
 
 #Construct report.html
-def htmlGenerator(data):
+def htmlGenerator(data, sRequest, sqlRequest):
     now = datetime.datetime.today().strftime("%Y%m%d-%H%M%S")
     filename = 'extract_'+ now +'.html'
     
@@ -94,8 +130,10 @@ def htmlGenerator(data):
                 <h1 class="display-4">Extract BDD '''+now+'''</h1>
                 <hr/>
         '''
-
-        htmlContent = showTable(data)
+        if sRequest:
+            htmlContent = showSResults(data, sqlRequest)
+        else:
+            htmlContent = showTable(data.fetchall())
 
         htmlEnd = '''
             </div>
@@ -121,15 +159,32 @@ def htmlGenerator(data):
 
 #Start Script by asking where file is:
 myFile = input('Path of DB file? ')
+mySQL = input('Specific SQL Request (if not just <enter>)? ')
 
 if (os.path.isfile(myFile)):
-    print("Connecting DB...")
+    print("Connecting DB..."+mySQL)
     #Start, connect to local DB
-    connection = sqlite3.connect(myFile)
-    cursor = connection.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%' ORDER BY name LIMIT 0,30")    
+    try:
+        connection = sqlite3.connect(myFile)
+        cursor = connection.cursor()
+        
+        #Allow to by_pass content generation
+        sRequest = False
 
-    #Launch file creation & print name
-    print("File created: "+htmlGenerator(cursor.fetchall()))
+        #Default SQL Request
+        sqlRequest = "SELECT name FROM sqlite_master WHERE type ='table' AND name NOT LIKE 'sqlite_%' ORDER BY name LIMIT 0,30"
+        
+        #Check for specific request
+        if mySQL:
+            sqlRequest = mySQL
+            sRequest = True
+            
+        #Execute Query
+        cursor.execute(sqlRequest)
+        
+        #Launch file creation & print name
+        print("File created: "+htmlGenerator(cursor, sRequest, sqlRequest))
+    except sqlite3.Error as e:
+        print("An error occured: "+e)
 else:
-    print("Error: input is not a file!")
+    print("Error: input "+myFile+" is not a file!")
